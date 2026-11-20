@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if object %}Edit {{ object.title }}{% else %}List a New Product{% endif %} — MiniShop
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4 p-lg-5">
+        <h1 id="product-form-heading" class="h3 fw-bold mb-1">
+          {% if object %}
+            Edit Product
+          {% else %}
+            List a New Product
+          {% endif %}
+        </h1>
+        <p class="text-muted mb-4">
+          {% if object %}
+            Update your product listing details below.
+          {% else %}
+            Fill in the details below to publish a product to the storefront.
+          {% endif %}
+        </p>
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form
+          method="POST"
+          action=""
+          enctype="multipart/form-data"
+          aria-labelledby="product-form-heading"
+        >
+          {% csrf_token %}
+
+          {% for field in form %}
+            <div class="mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label fw-medium">
+                {{ field.label }}
+                {% if field.field.required %}
+                  <span class="text-danger" aria-hidden="true">*</span>
+                {% endif %}
+              </label>
+
+              {% if field.name == "image" and object and object.image %}
+                <div class="mb-2 d-flex align-items-center gap-3 p-2 bg-light rounded border">
+                  <img
+                    src="{{ object.image.url }}"
+                    alt="Current image for {{ object.title }}"
+                    class="rounded"
+                    width="80"
+                    height="60"
+                    style="object-fit: cover;"
+                  >
+                  <span class="small text-muted">Current product image (upload a new file to replace)</span>
+                </div>
+              {% endif %}
+
+              {{ field }}
+
+              {% if field.help_text %}
+                <div id="{{ field.id_for_label }}-help" class="form-text">
+                  {{ field.help_text }}
+                </div>
+              {% endif %}
+
+              {% if field.errors %}
+                <div id="{{ field.id_for_label }}-error" class="invalid-feedback d-block" role="alert">
+                  {% for error in field.errors %}
+                    <div><i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+
+          <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-check-lg me-1" aria-hidden="true"></i>
+              {% if object %}Save Changes{% else %}Publish Product{% endif %}
+            </button>
+            {% if object %}
+              <a href="{% url 'store:product-detail' object.pk %}" class="btn btn-outline-secondary">
+                Cancel
+              </a>
+            {% else %}
+              <a href="{% url 'store:product-list' %}" class="btn btn-outline-secondary">
+                Cancel
+              </a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
