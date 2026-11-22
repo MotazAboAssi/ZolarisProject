@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders — MiniShop{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <i class="bi bi-clock-history fs-3 text-primary" aria-hidden="true"></i>
+  <h1 class="h3 mb-0 fw-bold">My Orders</h1>
+</div>
+
+<!-- Status Filter -->
+<form method="GET" class="d-flex gap-2 mb-4 flex-wrap">
+  <select name="status" class="form-select w-auto">
+    <option value="">All Statuses</option>
+    {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-outline-secondary">Filter</button>
+  {% if status_filter %}
+    <a href="{% url 'orders:order-history' %}" class="btn btn-link text-decoration-none">Clear</a>
+  {% endif %}
+</form>
+
+{% if page_obj.object_list %}
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Order #</th>
+            <th>Date</th>
+            <th class="text-center">Status</th>
+            <th class="text-end">Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in page_obj %}
+          <tr>
+            <td class="fw-semibold">#{{ order.pk }}</td>
+            <td>{{ order.created_at|date:"M d, Y" }}</td>
+            <td class="text-center">
+              <span class="badge
+                {% if order.status == 'pending' %}text-bg-warning
+                {% elif order.status == 'processing' %}text-bg-info
+                {% elif order.status == 'shipped' %}text-bg-primary
+                {% elif order.status == 'delivered' %}text-bg-success
+                {% elif order.status == 'cancelled' %}text-bg-danger
+                {% endif %}">
+                {{ order.get_status_display }}
+              </span>
+            </td>
+            <td class="text-end fw-semibold">${{ order.total_price }}</td>
+            <td class="text-end">
+              <a href="{% url 'orders:order-detail' order.pk %}" class="btn btn-outline-secondary btn-sm">
+                View
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <nav class="mt-4" aria-label="Orders pagination">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+        </li>
+      {% endif %}
+      <li class="page-item disabled">
+        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      </li>
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+
+{% else %}
+  <div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+      <i class="bi bi-bag-x display-3 text-muted mb-3" aria-hidden="true"></i>
+      <p class="text-muted mb-3">
+        {% if status_filter %}No orders with status "{{ status_filter }}".
+        {% else %}You haven't placed any orders yet.{% endif %}
+      </p>
+      <a href="{% url 'store:product-list' %}" class="btn btn-primary">
+        <i class="bi bi-bag me-1" aria-hidden="true"></i>Start Shopping
+      </a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

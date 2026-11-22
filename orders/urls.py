@@ -1,10 +1,18 @@
 from django.urls import path
 
-from .views import cart_add_placeholder, cart_detail_placeholder
+from . import views
 
 app_name = 'orders'
 
 urlpatterns = [
-    path('cart/', cart_detail_placeholder, name='cart-detail'),
-    path('cart/add/<int:product_id>/', cart_add_placeholder, name='cart-add'),
+    # Cart
+    path('cart/', views.cart_detail, name='cart-detail'),
+    path('cart/add/<int:product_id>/', views.cart_add, name='cart-add'),
+    path('cart/remove/<int:product_id>/', views.cart_remove, name='cart-remove'),
+    path('cart/update/<int:product_id>/', views.cart_update, name='cart-update'),
+    # Checkout
+    path('checkout/', views.checkout, name='checkout'),
+    # Order history & detail
+    path('orders/', views.order_history, name='order-history'),
+    path('orders/<int:pk>/', views.order_detail, name='order-detail'),
 ]

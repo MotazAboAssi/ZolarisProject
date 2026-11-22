@@ -70,6 +70,15 @@
                   <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Sell Product
                 </a>
               </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link {% if request.resolver_match.url_name == 'order-history' %}active{% endif %}"
+                  href="{% url 'orders:order-history' %}"
+                  {% if request.resolver_match.url_name == 'order-history' %}aria-current="page"{% endif %}
+                >
+                  <i class="bi bi-clock-history me-1" aria-hidden="true"></i>My Orders
+                </a>
+              </li>
             {% endif %}
           </ul>
 
@@ -169,6 +178,9 @@
           </a>
           <a href="{% url 'orders:cart-detail' %}" class="link-light link-opacity-75-hover text-decoration-none me-3">
             Cart
+          </a>
+          <a href="{% url 'orders:order-history' %}" class="link-light link-opacity-75-hover text-decoration-none me-3">
+            My Orders
           </a>
           <a href="{% url 'accounts:profile' %}" class="link-light link-opacity-75-hover text-decoration-none">
             Account

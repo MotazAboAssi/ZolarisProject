@@ -86,3 +86,52 @@ The following settings and URL names are already wired across `base.html`, `stor
 python manage.py check
 python manage.py test
 ```
+
+---
+
+## Cart & Checkout — Orders App
+
+### How the cart works
+
+The shopping cart is **session-based** (no database table required). Each visitor gets a cart stored in Django's server-side session under the key `cart`. The cart dictionary maps `str(product_id)` to `{quantity, price}`, where `price` is a snapshot taken at add-time.
+
+Key behaviours:
+- **Add** (`POST /orders/cart/add/<id>/`) — adds the requested quantity; validates that quantity ≥ 1 and that the combined cart quantity does not exceed current stock.
+- **Update** (`POST /orders/cart/update/<id>/`) — overwrites the item's quantity; quantity 0 or below removes the item.
+- **Remove** (`POST /orders/cart/remove/<id>/`) — deletes the item from the cart.
+- Deleted products are silently removed from the cart on the next page load.
+
+### How checkout works
+
+1. `GET /orders/checkout/` renders an order summary with the current cart.
+2. `POST /orders/checkout/` runs inside a **database transaction**:
+   - Re-validates every item's stock with `SELECT FOR UPDATE` to prevent race conditions.
+   - Creates an `Order` and one `OrderItem` per cart line.
+   - Each `OrderItem` stores a **snapshot** of the product's title and unit price at the time of purchase so historical orders remain accurate even after price changes.
+   - Decrements `Product.stock` for each item.
+   - Clears the session cart.
+   - Redirects to the new order's detail page.
+
+Empty-cart checkout is blocked at both GET and POST.
+
+### Order history & detail
+
+- `GET /orders/orders/` — paginated list of the authenticated user's own orders, with optional `?status=` filter.
+- `GET /orders/orders/<pk>/` — detail view; returns HTTP 404 for any order not owned by the requesting user.
+
+### Files created / modified
+
+| File | Action |
+|------|--------|
+| `orders/models.py` | Created — `Order` + `OrderItem` models |
+| `orders/cart.py` | Created — session `Cart` class |
+| `orders/views.py` | Replaced — full cart, checkout, history & detail views |
+| `orders/urls.py` | Replaced — all orders URL patterns |
+| `orders/admin.py` | Replaced — admin registration with inline |
+| `orders/migrations/0001_initial.py` | Created — DB migration |
+| `orders/templates/orders/cart.html` | Created |
+| `orders/templates/orders/checkout.html` | Created |
+| `orders/templates/orders/order_history.html` | Created |
+| `orders/templates/orders/order_detail.html` | Created |
+| `orders/tests.py` | Created — 25 automated tests |
+| `templates/base.html` | Updated — added "My Orders" nav link & footer link |
