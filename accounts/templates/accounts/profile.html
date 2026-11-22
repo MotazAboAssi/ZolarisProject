@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}My Profile &mdash; ShopDjango{% endblock %}
+{% block content %}
+<div class="row">
+  <!-- Left column: avatar + summary -->
+  <div class="col-md-3 mb-4">
+    <div class="card shadow-sm text-center p-3">
+      {% if profile.image %}
+        <img src="{{ profile.image.url }}" alt="Profile image"
+             class="rounded-circle mx-auto d-block mb-3"
+             style="width:120px;height:120px;object-fit:cover;">
+      {% else %}
+        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
+             style="width:120px;height:120px;font-size:3rem;">
+          &#128100;
+        </div>
+      {% endif %}
+      <h5 class="mb-0">{{ profile.full_name }}</h5>
+      <small class="text-muted">@{{ user.username }}</small>
+      {% if profile.city or profile.country %}
+        <p class="mt-2 mb-0 text-muted small">
+          {% if profile.city %}{{ profile.city }}{% endif %}
+          {% if profile.city and profile.country %}, {% endif %}
+          {% if profile.country %}{{ profile.country }}{% endif %}
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right column: edit form -->
+  <div class="col-md-9">
+    <div class="card shadow-sm">
+      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Edit Profile</h5>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <h6 class="text-muted mb-3 border-bottom pb-1">Account details</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">First name</label>
+              <input class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+                     type="text" name="first_name"
+                     value="{{ form.first_name.value|default:'' }}">
+              {% for e in form.first_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Last name</label>
+              <input class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+                     type="text" name="last_name"
+                     value="{{ form.last_name.value|default:'' }}">
+              {% for e in form.last_name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Email</label>
+              <input class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                     type="email" name="email"
+                     value="{{ form.email.value|default:'' }}" required>
+              {% for e in form.email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+            </div>
+          </div>
+
+          <h6 class="text-muted mb-3 border-bottom pb-1">Profile details</h6>
+          <div class="mb-3">
+            <label class="form-label">Bio</label>
+            <textarea class="form-control" name="bio" rows="3">{{ form.bio.value|default:'' }}</textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input class="form-control" type="text" name="phone"
+                   value="{{ form.phone.value|default:'' }}">
+          </div>
+
+          <h6 class="text-muted mb-3 border-bottom pb-1">Address</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <label class="form-label">Street address</label>
+              <input class="form-control" type="text" name="address"
+                     value="{{ form.address.value|default:'' }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">City</label>
+              <input class="form-control" type="text" name="city"
+                     value="{{ form.city.value|default:'' }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Country</label>
+              <input class="form-control" type="text" name="country"
+                     value="{{ form.country.value|default:'' }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Postal code</label>
+              <input class="form-control" type="text" name="postal_code"
+                     value="{{ form.postal_code.value|default:'' }}">
+            </div>
+          </div>
+
+          <h6 class="text-muted mb-3 border-bottom pb-1">Profile image</h6>
+          <div class="mb-4">
+            {% if profile.image %}
+              <p class="text-muted small">Current: <strong>{{ profile.image.name }}</strong></p>
+            {% endif %}
+            <input class="form-control" type="file" name="image" accept="image/*">
+            {% if form.image.errors %}
+              {% for e in form.image.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            {% endif %}
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-dark">Save changes</button>
+            <a href="{% url 'store:product-list' %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

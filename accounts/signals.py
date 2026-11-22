@@ -1,0 +1,16 @@
+from django.db.models.signals import post_save
+from django.contrib.auth.models import User
+from django.dispatch import receiver
+from .models import Profile
+
+
+@receiver(post_save, sender=User)
+def create_or_update_profile(sender, instance, created, **kwargs):
+    """Create a Profile automatically when a new User is saved.
+    If the profile already exists (e.g. admin creates user twice), just save it.
+    """
+    if created:
+        Profile.objects.get_or_create(user=instance)
+    else:
+        # Save profile if it already exists (keeps updated timestamp fresh)
+        Profile.objects.filter(user=instance).update()
