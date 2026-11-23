@@ -3,6 +3,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import RegistrationForm, ProfileForm
+from .models import Profile
 
 
 
@@ -28,7 +29,7 @@ def register(request):
 @login_required
 def profile(request):
     """View and edit the authenticated user own profile."""
-    profile_obj = request.user.profile  # guaranteed by signal
+    profile_obj, _ = Profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=profile_obj)

@@ -15,10 +15,7 @@ class Cart:
     def __init__(self, request):
         self.session = request.session
         cart = self.session.get(CART_SESSION_KEY)
-        if cart is None:
-            cart = {}
-            self.session[CART_SESSION_KEY] = cart
-        self.cart = cart
+        self.cart = cart if cart is not None else {}
 
     # ------------------------------------------------------------------ #
     # Mutation helpers
@@ -44,8 +41,10 @@ class Cart:
             self._save()
 
     def clear(self):
-        del self.session[CART_SESSION_KEY]
-        self.session.modified = True
+        self.cart = {}
+        if CART_SESSION_KEY in self.session:
+            del self.session[CART_SESSION_KEY]
+            self.session.modified = True
 
     # ------------------------------------------------------------------ #
     # Read helpers
@@ -78,7 +77,8 @@ class Cart:
 
     def get_total_price(self) -> Decimal:
         return sum(
-            Decimal(e['price']) * e['quantity'] for e in self.cart.values()
+            (Decimal(e['price']) * e['quantity'] for e in self.cart.values()),
+            Decimal('0.00'),
         )
 
     def is_empty(self) -> bool:
@@ -89,4 +89,5 @@ class Cart:
     # ------------------------------------------------------------------ #
 
     def _save(self):
+        self.session[CART_SESSION_KEY] = self.cart
         self.session.modified = True

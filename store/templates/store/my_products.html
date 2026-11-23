@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}My Products — MiniShop{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div>
+    <h1 class="h2 fw-bold mb-1">My Products</h1>
+    <p class="text-muted mb-0">
+      {% if paginator %}
+        Manage your {{ paginator.count }} listed product{{ paginator.count|pluralize }}.
+      {% else %}
+        Manage your listed products.
+      {% endif %}
+    </p>
+  </div>
+  <a href="{% url 'store:product-create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add Product
+  </a>
+</div>
+
+{% if products %}
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">Product</th>
+            <th scope="col">Category</th>
+            <th scope="col" class="text-end">Price</th>
+            <th scope="col" class="text-center">Stock</th>
+            <th scope="col" class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in products %}
+            <tr>
+              <td>
+                <a href="{% url 'store:product-detail' product.pk %}" class="fw-semibold text-decoration-none">
+                  {{ product.title }}
+                </a>
+                <div class="small text-muted">Updated {{ product.updated_at|date:"M d, Y" }}</div>
+              </td>
+              <td>
+                {% if product.category %}
+                  <span class="badge text-bg-light border text-secondary">{{ product.category.name }}</span>
+                {% else %}
+                  <span class="badge text-bg-light border text-secondary">Uncategorized</span>
+                {% endif %}
+              </td>
+              <td class="text-end fw-semibold">${{ product.price }}</td>
+              <td class="text-center">
+                {% if product.stock > 0 %}
+                  <span class="badge text-bg-success-subtle text-success border border-success-subtle">
+                    {{ product.stock }} in stock
+                  </span>
+                {% else %}
+                  <span class="badge text-bg-danger-subtle text-danger border border-danger-subtle">
+                    Out of stock
+                  </span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-1">
+                  <a href="{% url 'store:product-update' product.pk %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit
+                  </a>
+                  <a href="{% url 'store:product-delete' product.pk %}" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash me-1" aria-hidden="true"></i>Delete
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if is_paginated %}
+    <nav class="mt-4" aria-label="My products pagination">
+      <ul class="pagination justify-content-center flex-wrap">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Previous</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">&laquo; Previous</span></li>
+        {% endif %}
+
+        {% for page_num in page_range %}
+          {% if page_num == page_obj.paginator.ELLIPSIS %}
+            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+          {% elif page_num == page_obj.number %}
+            <li class="page-item active" aria-current="page"><span class="page-link">{{ page_num }}</span></li>
+          {% else %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+{% else %}
+  <div class="card border-0 shadow-sm text-center py-5 px-3">
+    <div class="card-body">
+      <i class="bi bi-box-seam display-4 text-muted" aria-hidden="true"></i>
+      <h2 class="h4 mt-3">You haven't listed any products yet</h2>
+      <p class="text-muted mb-4">Add your first product to make it visible in the storefront.</p>
+      <a href="{% url 'store:product-create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add Product
+      </a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

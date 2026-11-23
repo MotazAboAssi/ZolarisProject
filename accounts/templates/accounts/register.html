@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Register &mdash; ShopDjango{% endblock %}
+{% block title %}Register &mdash; MiniShop{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-6">
@@ -17,7 +17,7 @@
                      type="{{ field.field.widget.input_type }}"
                      name="{{ field.html_name }}"
                      id="{{ field.id_for_label }}"
-                     value="{{ field.value|default:'' }}"
+                     {% if field.field.widget.input_type != 'password' %}value="{{ field.value|default:'' }}"{% endif %}
                      {% if field.field.required %}required{% endif %}>
               {% if field.help_text %}
                 <div class="form-text text-muted">{{ field.help_text }}</div>

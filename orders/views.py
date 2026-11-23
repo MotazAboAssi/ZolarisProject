@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -119,8 +121,14 @@ def checkout(request):
                 return redirect('orders:cart-detail')
 
             errors = []
+            locked_products = {}
             for item in cart_items:
-                product = Product.objects.select_for_update().get(pk=item['product'].pk)
+                try:
+                    product = Product.objects.select_for_update().get(pk=item['product'].pk)
+                except Product.DoesNotExist:
+                    errors.append(f'"{item["product"].title}" is no longer available.')
+                    continue
+                locked_products[product.pk] = product
                 if product.stock < item['quantity']:
                     errors.append(
                         f'Only {product.stock} unit(s) of "{product.title}" left in stock.'
@@ -132,11 +140,11 @@ def checkout(request):
                 return redirect('orders:cart-detail')
 
             # Create order
-            order = Order.objects.create(user=request.user, total_price=0)
+            order = Order.objects.create(user=request.user, total_price=Decimal('0.00'))
 
-            total = 0
+            total = Decimal('0.00')
             for item in cart_items:
-                product = Product.objects.select_for_update().get(pk=item['product'].pk)
+                product = locked_products[item['product'].pk]
                 OrderItem.objects.create(
                     order=order,
                     product=product,

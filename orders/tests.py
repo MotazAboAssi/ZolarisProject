@@ -278,12 +278,12 @@ class OrderHistoryDetailTest(TestCase):
         self.product = make_product(self.seller, stock=20)
         self.client = Client()
         self.client.login(username='buyer6', password='testpass123')
-        # Place one order
+        # Place one order (follow redirect to consume flash messages)
         self.client.post(
             reverse('orders:cart-add', args=[self.product.pk]),
             {'quantity': 1},
         )
-        self.client.post(reverse('orders:checkout'))
+        self.client.post(reverse('orders:checkout'), follow=True)
         self.order = Order.objects.get(user=self.buyer)
 
     def test_order_history_requires_login(self):

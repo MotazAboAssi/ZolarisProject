@@ -31,11 +31,18 @@ def _parse_non_negative_decimal(raw_value: str) -> Decimal | None:
     return parsed
 
 
-class ProductOwnerRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Restrict access so only the seller who owns the product can modify or delete it."""
+class SuperuserRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Restrict access strictly to store admin sellers (superusers)."""
 
     def test_func(self) -> bool:
-        return self.get_object().seller == self.request.user
+        return self.request.user.is_superuser
+
+
+class ProductOwnerRequiredMixin(SuperuserRequiredMixin):
+    """Restrict access so only superuser sellers who own the product can modify or delete it."""
+
+    def test_func(self) -> bool:
+        return super().test_func() and self.get_object().seller == self.request.user
 
 
 class ProductListView(ListView):
@@ -44,7 +51,7 @@ class ProductListView(ListView):
     model = Product
     template_name = 'store/product_list.html'
     context_object_name = 'products'
-    paginate_by = 9
+    paginate_by = 7
 
     def get_queryset(self):
         queryset = Product.objects.select_related('category', 'seller')
@@ -124,8 +131,33 @@ class ProductDetailView(DetailView):
         return Product.objects.select_related('category', 'seller')
 
 
-class ProductCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-    """Allow authenticated users to publish new product listings."""
+class MyProductsView(SuperuserRequiredMixin, ListView):
+    """Seller dashboard listing products owned by the authenticated superuser."""
+
+    model = Product
+    template_name = 'store/my_products.html'
+    context_object_name = 'products'
+    paginate_by = 7
+
+    def get_queryset(self):
+        return (
+            Product.objects.filter(seller=self.request.user)
+            .select_related('category', 'seller')
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if context.get('is_paginated'):
+            context['page_range'] = context['paginator'].get_elided_page_range(
+                context['page_obj'].number,
+                on_each_side=2,
+                on_ends=1,
+            )
+        return context
+
+
+class ProductCreateView(SuperuserRequiredMixin, SuccessMessageMixin, CreateView):
+    """Allow store superusers to publish new product listings."""
 
     model = Product
     form_class = ProductForm

@@ -49,7 +49,7 @@ class Order(models.Model):
 
     def calculate_total(self) -> Decimal:
         """Recalculate and save the order total from its items."""
-        total = sum(item.line_total for item in self.items.all())
+        total = sum((item.line_total for item in self.items.all()), Decimal('0.00'))
         self.total_price = total
         self.save(update_fields=['total_price'])
         return total

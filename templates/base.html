@@ -61,15 +61,26 @@
               </a>
             </li>
             {% if user.is_authenticated %}
-              <li class="nav-item">
-                <a
-                  class="nav-link {% if request.resolver_match.url_name == 'product-create' %}active{% endif %}"
-                  href="{% url 'store:product-create' %}"
-                  {% if request.resolver_match.url_name == 'product-create' %}aria-current="page"{% endif %}
-                >
-                  <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Sell Product
-                </a>
-              </li>
+              {% if user.is_superuser %}
+                <li class="nav-item">
+                  <a
+                    class="nav-link {% if request.resolver_match.url_name == 'product-create' %}active{% endif %}"
+                    href="{% url 'store:product-create' %}"
+                    {% if request.resolver_match.url_name == 'product-create' %}aria-current="page"{% endif %}
+                  >
+                    <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Add Product
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link {% if request.resolver_match.url_name == 'my-products' %}active{% endif %}"
+                    href="{% url 'store:my-products' %}"
+                    {% if request.resolver_match.url_name == 'my-products' %}aria-current="page"{% endif %}
+                  >
+                    <i class="bi bi-box-seam me-1" aria-hidden="true"></i>My Products
+                  </a>
+                </li>
+              {% endif %}
               <li class="nav-item">
                 <a
                   class="nav-link {% if request.resolver_match.url_name == 'order-history' %}active{% endif %}"

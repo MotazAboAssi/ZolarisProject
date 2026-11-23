@@ -19,8 +19,8 @@ class RegistrationForm(UserCreationForm):
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
 
     def clean_email(self):
-        email = self.cleaned_data['email'].lower()
-        if User.objects.filter(email=email).exists():
+        email = self.cleaned_data['email'].strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError('An account with this email already exists.')
         return email
 
@@ -57,8 +57,8 @@ class ProfileForm(forms.ModelForm):
             self.fields['email'].initial = user.email
 
     def clean_email(self):
-        email = self.cleaned_data['email'].lower()
-        qs = User.objects.filter(email=email).exclude(pk=self.instance.user.pk)
+        email = self.cleaned_data['email'].strip().lower()
+        qs = User.objects.filter(email__iexact=email).exclude(pk=self.instance.user.pk)
         if qs.exists():
             raise forms.ValidationError('Another account with this email already exists.')
         return email
